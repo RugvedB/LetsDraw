@@ -1,6 +1,8 @@
 import { useLayoutEffect } from "react";
 import rough from 'roughjs/bundled/rough.esm';
 
+const generator = rough.generator()
+
 function App() {
 
   useLayoutEffect(() => {
@@ -8,7 +10,10 @@ function App() {
     const ctx = canvas.getContext('2d')
 
     const roughCanvas = rough.canvas(canvas)
-    roughCanvas.rectangle(10, 20, 100,200)
+    const rect = generator.rectangle(10, 20, 100,200)
+    const line = generator.line(10, 10, 100, 200)
+    roughCanvas.draw(rect)
+    roughCanvas.draw(line)
   })
 
   return (
