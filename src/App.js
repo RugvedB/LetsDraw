@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import rough from 'roughjs/bundled/rough.esm';
 
 const generator = rough.generator()
@@ -113,8 +113,35 @@ function resizedCoordinates(clientX, clientY, position, coordinates) {
 
 }
 
+const useHistory = (initialState) => {
+  const [index, setIndex] = useState(0)
+  const [history, setHistory] = useState([initialState])
+
+  const setState = (action, override = false) => {
+    // action could be a 1)current state or 2)function
+    // 1) setState(items) 2) setState(prevState => prevState)
+    const newState = typeof action === "function" ? action(history[index]) : action
+    if(override) {
+      const historyCopy = [...history]
+      historyCopy[index] = newState
+      setHistory(historyCopy)
+    }
+    else{
+      const updatedState = [...history].splice(0, index + 1)
+      setHistory([...updatedState, newState])
+      setIndex(prevState => prevState + 1)
+    }
+  
+  }
+
+  const undo = () => index > 0 && setIndex(prevState => prevState - 1)
+  const redo = () => index < history.length - 1 && setIndex(prevState => prevState + 1)
+
+  return [history[index], setState, undo, redo]
+}
+
 function App() {
-  const [elements, setElements] = useState([])
+  const [elements, setElements, undo, redo] = useHistory([])
   const [action, setAction] = useState('none')
   const [tool, setTool] = useState(null)
   const [selectedElement, setSelectedElement] = useState(null)
@@ -131,6 +158,23 @@ function App() {
 
   },[elements])
 
+  useEffect(() => {
+    const undoRedoFunction = event => {
+      if((event.ctrlKey && event.key === "z")) {
+        undo()
+      }
+      if((event.ctrlKey && event.key === "y")) {
+        redo()
+      }
+    }
+
+    document.addEventListener("keydown", undoRedoFunction)
+    
+    return () => {
+      document.removeEventListener("keydown", undoRedoFunction)
+    }
+  }, [undo, redo])
+
   const handleMouseDown = (event) => {
     const { clientX, clientY } = event
 
@@ -140,6 +184,9 @@ function App() {
       if(element) {
         const offsetX = clientX - element.x1
         const offsetY = clientY - element.y1
+        setSelectedElement({...element, offsetX, offsetY})
+        // Added the below line because when we use selection, history is not created, only its last element is overrided. So to create a new entry in history we use setElements whichis actually the setState method of useHistory.
+        setElements(prevState => prevState)
 
         if(element.position === "inside"){
           setAction("moving")
@@ -148,10 +195,9 @@ function App() {
           console.log('setting action to resizing')
           setAction("resizing")
         }
-        setSelectedElement({...element, offsetX, offsetY})
       }
     }
-    else{
+    else if(tool === "rectangle" || tool === "line"){
       const id = elements.length
       const element = createElement(id, clientX, clientY, clientX, clientY, tool)
       setElements(prevState => [...prevState, element])
@@ -166,7 +212,7 @@ function App() {
   
     const elementsCopy = [...elements]
     elementsCopy[id] = updatedElement
-    setElements(elementsCopy)
+    setElements(elementsCopy, true)
   }
 
   const handleMouseMove = (event) => {
@@ -203,12 +249,14 @@ function App() {
   }
 
   const handleMouseUp = (event) => {
-    const index = selectedElement.id
-    const { id, type } = elements[index]
-
-    if(action === "drawing" || action === "resizing") {
-      const { x1, y1, x2, y2 } = adjustElementCoordinates(elements[index])
-      updateElement(id, x1, y1, x2, y2, type)
+    if(selectedElement){
+      const index = selectedElement.id
+      const { id, type } = elements[index]
+  
+      if(action === "drawing" || action === "resizing") {
+        const { x1, y1, x2, y2 } = adjustElementCoordinates(elements[index])
+        updateElement(id, x1, y1, x2, y2, type)
+      }
     }
 
     setAction("none")
@@ -241,6 +289,11 @@ function App() {
           onChange={() => setTool("rectangle")}
         />
         <label htmlFor="rectangle">Rectangle</label>
+      </div>
+
+      <div style={{ position: "fixed", top: 0, right: 0, padding: "10px" }}>
+        <button onClick={() => undo()}>Undo</button>
+        <button onClick={() => redo()}>Redo</button>
       </div>
 
       <canvas 
