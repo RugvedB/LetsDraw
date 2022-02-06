@@ -7,7 +7,9 @@ const generator = rough.generator()
 function createElement(id, x1, y1, x2, y2, type) {
   switch(type) {
     case "line":
+      console.log("createElement:line")
       const roughElementForLine = generator.line(x1, y1, x2, y2)
+      console.log({ id, x1, y1, x2, y2, roughElementForLine, type })
       return { id, x1, y1, x2, y2, roughElementForLine, type }
     case "rectangle":
       const roughElementForRectangle = generator.rectangle(x1, y1, x2-x1, y2-y1)
@@ -23,6 +25,15 @@ function createElement(id, x1, y1, x2, y2, type) {
 const nearPoint = (x, y, x1, y1, name) => {
   const offset = 10
   return Math.abs(x - x1) < offset && Math.abs(y - y1) < offset ? name : null
+}
+
+function onLine(x1, y1, x2, y2, x, y) {
+  const a = { x: x1, y: y1 }
+  const b = { x: x2, y: y2 }
+  const c = { x: x, y: y }
+  const offset = distance(a, b) - (distance(a, c) + distance(b, c))
+  const insideLine = Math.abs(offset) < 1  ? "inside" : null
+  return insideLine
 }
 
 const positionWithinElement = (x, y, element) => {
@@ -45,14 +56,15 @@ const positionWithinElement = (x, y, element) => {
       return topLeft || topRight || bottomLeft || bottomRight || insideRect
     case "line":
       console.log("line for selection")
-      const a = { x: x1, y: y1 }
-      const b = { x: x2, y: y2 }
-      const c = { x: x, y: y }
-      const offset = distance(a, b) - (distance(a, c) + distance(b, c))
+      const insideLine = onLine(x1, y1, x2, y2, x, y)
       const start = nearPoint(x, y, x1, y1, "start")
       const end = nearPoint(x, y, x2, y2, "end")
-      const insideLine = Math.abs(offset) < 1  ? "inside" : null
       return start || end || insideLine
+    case "pencil":
+
+      return
+    default:
+      throw new Error("Error")
   }
 }
 
@@ -245,6 +257,8 @@ function App() {
     else if(tool === "rectangle" || tool === "line" || tool === "pencil"){
       const id = elements.length
       const element = createElement(id, clientX, clientY, clientX, clientY, tool)
+      console.log("new element created")
+      console.log(element)
       setElements(prevState => [...prevState, element])
       setAction("drawing")
       setSelectedElement(element)
