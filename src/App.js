@@ -1,18 +1,21 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import rough from 'roughjs/bundled/rough.esm';
+import { getStroke } from 'perfect-freehand'
 
 const generator = rough.generator()
 
 function createElement(id, x1, y1, x2, y2, type) {
   switch(type) {
     case "line":
-      var roughElement = generator.line(x1, y1, x2, y2)
-      return { id, x1, y1, x2, y2, roughElement, type }
+      const roughElementForLine = generator.line(x1, y1, x2, y2)
+      return { id, x1, y1, x2, y2, roughElementForLine, type }
     case "rectangle":
-      var roughElement = generator.rectangle(x1, y1, x2-x1, y2-y1)
-      return { id, x1, y1, x2, y2, roughElement, type }
+      const roughElementForRectangle = generator.rectangle(x1, y1, x2-x1, y2-y1)
+      return { id, x1, y1, x2, y2, roughElementForRectangle, type }
+    case "pencil":
+      return { id, type, points: [{ x: x1, y: y1 }] }
     default:
-      return null
+      throw new Error(`Type not recognised : ${type}`)
   
   }
 }
@@ -140,10 +143,54 @@ const useHistory = (initialState) => {
   return [history[index], setState, undo, redo]
 }
 
+function getSvgPathFromStroke(stroke) {
+  if (!stroke.length) return ""
+
+  const d = stroke.reduce(
+    (acc, [x0, y0], i, arr) => {
+      const [x1, y1] = arr[(i + 1) % arr.length]
+      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2)
+      return acc
+    },
+    ["M", ...stroke[0], "Q"]
+  )
+
+  d.push("Z")
+  return d.join(" ")
+}
+
+const drawElement = (roughCanvas, context, element) => {
+  switch(element.type) {
+    case "line":
+    case "rectangle":
+      roughCanvas.draw(element.roughElement)
+      break
+    case "pencil":
+      console.log('In draw element pencil')
+      const stroke = getStroke(element.points, {
+        size: 10
+      });
+      const pathData = getSvgPathFromStroke(stroke);
+      const myPath = new Path2D(pathData)
+      context.fill(myPath)
+      break
+    default:
+      throw new Error(`Type not recognised : ${element.type}`)
+
+  }
+}
+
+function adjustmentRequired(type) {
+  if(type in ['line', 'rectangle']){
+    return true
+  }
+  return false
+}
+
 function App() {
   const [elements, setElements, undo, redo] = useHistory([])
   const [action, setAction] = useState('none')
-  const [tool, setTool] = useState(null)
+  const [tool, setTool] = useState('pencil')
   const [selectedElement, setSelectedElement] = useState(null)
 
   useLayoutEffect(() => {
@@ -152,9 +199,7 @@ function App() {
     context.clearRect(0, 0, canvas.width, canvas.height)
 
     const roughCanvas = rough.canvas(canvas)
-    elements.forEach(element => {
-      roughCanvas.draw(element.roughElement)
-    })
+    elements.forEach(element => drawElement(roughCanvas, context, element))
 
   },[elements])
 
@@ -197,7 +242,7 @@ function App() {
         }
       }
     }
-    else if(tool === "rectangle" || tool === "line"){
+    else if(tool === "rectangle" || tool === "line" || tool === "pencil"){
       const id = elements.length
       const element = createElement(id, clientX, clientY, clientX, clientY, tool)
       setElements(prevState => [...prevState, element])
@@ -208,10 +253,21 @@ function App() {
   }
 
   const updateElement = (id, x1, y1, x2, y2, type) => {
-    const updatedElement = createElement(id, x1, y1, x2, y2, type)
-  
     const elementsCopy = [...elements]
-    elementsCopy[id] = updatedElement
+    
+    
+    switch(type){
+      case "line":
+      case "rectangle":    
+        elementsCopy[id] = createElement(id, x1, y1, x2, y2, type)
+        break
+      case "pencil":
+        elementsCopy[id].points = [...elementsCopy[id].points, { x: x2, y: y2 }] 
+        break
+      default:
+        throw new Error(`Type not recognized ${type}`)
+    }
+
     setElements(elementsCopy, true)
   }
 
@@ -253,7 +309,7 @@ function App() {
       const index = selectedElement.id
       const { id, type } = elements[index]
   
-      if(action === "drawing" || action === "resizing") {
+      if((action === "drawing" || action === "resizing") && adjustmentRequired(type)) {
         const { x1, y1, x2, y2 } = adjustElementCoordinates(elements[index])
         updateElement(id, x1, y1, x2, y2, type)
       }
@@ -289,6 +345,14 @@ function App() {
           onChange={() => setTool("rectangle")}
         />
         <label htmlFor="rectangle">Rectangle</label>
+
+        <input
+          type="radio"
+          id="pencil" 
+          checked={tool === "pencil"}
+          onChange={() => setTool("pencil")}
+        />
+        <label htmlFor="pencil">Pencil</label>
       </div>
 
       <div style={{ position: "fixed", top: 0, right: 0, padding: "10px" }}>
