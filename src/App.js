@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import rough from 'roughjs/bundled/rough.esm';
 import { getStroke } from 'perfect-freehand'
 
@@ -17,7 +17,7 @@ function createElement(id, x1, y1, x2, y2, type) {
     case "pencil":
       return { id, type, points: [{ x: x1, y: y1 }] }
     case "text":
-      return { id, type, x1, y1, text:"Hey There" }
+      return { id, type, x1, y1, x2, y2, text: "" }
     default:
       throw new Error(`Type not recognised : ${type}`)
   
@@ -71,6 +71,8 @@ const positionWithinElement = (x, y, element) => {
       const onPath = betweenAnyPoint ? "inside" : null
 
       return onPath
+    case "text":
+      return x >= x1 && x <= x2 && y >= y1 && y <= y2 ? "inside" : null 
     default:
       throw new Error("Error")
   }
@@ -99,6 +101,8 @@ function adjustElementCoordinates(element){
         return { x1, y1, x2, y2 }
       }
       return { x1: x2, y1: y2, x2: x1, y2: y1 }
+    default:
+      throw new Error(`Type not recognised : ${element.type}`)
   }
 }
 
@@ -196,6 +200,7 @@ const drawElement = (roughCanvas, context, element) => {
       break
     case "text":
       console.log("element.text, element.x1, element.y1")
+      context.textBaseline = "top"
       context.font = "24px sans-serif"
       context.fillText(element.text, element.x1, element.y1)
       break
@@ -217,6 +222,7 @@ function App() {
   const [action, setAction] = useState('none')
   const [tool, setTool] = useState('text')
   const [selectedElement, setSelectedElement] = useState(null)
+  const textAreaRef = useRef()
 
   useLayoutEffect(() => {
     const canvas = document.getElementById("canvas")
@@ -224,9 +230,13 @@ function App() {
     context.clearRect(0, 0, canvas.width, canvas.height)
 
     const roughCanvas = rough.canvas(canvas)
-    elements.forEach(element => drawElement(roughCanvas, context, element))
+    elements.forEach(element => {
+        if(action === "writing" && selectedElement.id === element.id) return
+        drawElement(roughCanvas, context, element)
+      }
+    )
 
-  },[elements])
+  },[elements, action, selectedElement])
 
   useEffect(() => {
     const undoRedoFunction = event => {
@@ -245,7 +255,18 @@ function App() {
     }
   }, [undo, redo])
 
+  useEffect(() => {
+    const textArea = textAreaRef.current
+    
+    if(action === "writing") {
+      textArea.focus()
+      textArea.value = selectedElement.text
+    }
+  },[action, selectedElement])
+
   const handleMouseDown = (event) => {
+    if(action === "writing") return
+
     const { clientX, clientY } = event
 
     if(tool === "selection"){
@@ -282,16 +303,15 @@ function App() {
       console.log("new element created")
       console.log(element)
       setElements(prevState => [...prevState, element])
-      setAction("drawing")
+      setAction(tool === "text" ? "writing" : "drawing")
       setSelectedElement(element)
 
     }
   }
 
-  const updateElement = (id, x1, y1, x2, y2, type) => {
+  const updateElement = (id, x1, y1, x2, y2, type, options) => {
     const elementsCopy = [...elements]
     
-
     switch(type){
       case "line":
       case "rectangle":    
@@ -299,6 +319,17 @@ function App() {
         break
       case "pencil":
         elementsCopy[id].points = [...elementsCopy[id].points, { x: x2, y: y2 }] 
+        break
+      case "text":
+        const textWidth = document
+          .getElementById("canvas")
+          .getContext("2d")
+          .measureText(options.text).width
+        const textHeight = 24
+        elementsCopy[id] = {
+          ...createElement(id, x1, y1, x1 + textWidth, y1 + textHeight, type),
+          text: options.text,
+        }
         break
       default:
         throw new Error(`Type not recognized ${type}`)
@@ -345,7 +376,8 @@ function App() {
         const height = y2 - y1
         const newX1 = clientX - offsetX
         const newY1 = clientY - offsetY
-        updateElement(id, newX1, newY1, newX1 + width, newY1 + height, type)
+        const options = type === "text" ? { text: selectedElement.text } : {}
+        updateElement(id, newX1, newY1, newX1 + width, newY1 + height, type, options)
       }
     }
     else if(action === "resizing") {
@@ -359,7 +391,18 @@ function App() {
   }
 
   const handleMouseUp = (event) => {
+    const { clientX, clientY } = event
+
     if(selectedElement){
+
+      if(selectedElement.type === "text" 
+        && clientX - selectedElement.offsetX === selectedElement.x1
+        && clientY - selectedElement.offsetY === selectedElement.y1  
+      ) {
+        setAction("writing")
+        return
+      }
+
       const index = selectedElement.id
       const { id, type } = elements[index]
   
@@ -369,8 +412,18 @@ function App() {
       }
     }
 
+    // if we are writing, we dont want to reset action to none
+    if(action === "writing") return
+
     setAction("none")
     setSelectedElement(null)
+  }
+
+  const handleBlur = (event) => {
+    const { id, x1, y1, type } = selectedElement
+    setAction("none")
+    setSelectedElement(null)
+    updateElement(id, x1, y1, null, null, type, { text: event.target.value })
   }
 
   return (
@@ -418,9 +471,31 @@ function App() {
       </div>
 
       <div style={{ position: "fixed", top: 0, right: 0, padding: "10px" }}>
-        <button onClick={() => undo()}>Undo</button>
-        <button onClick={() => redo()}>Redo</button>
+        <button onClick={() => undo()}>Undo (Ctrl + Z)</button>
+        <button onClick={() => redo()}>Redo (Ctrl + Y)</button>
       </div>
+
+      {
+        action === "writing" ? 
+        <textarea
+          ref={textAreaRef} 
+          onBlur={handleBlur}
+          style={{ 
+            position: "fixed", 
+            top: selectedElement.y1, 
+            left: selectedElement.x1,
+            font: "24px sans-serif",
+            margin: 0,
+            padding: 0,
+            border: 0,
+            outline: 0,
+            resize: "auto",
+            overflow: "hidden",
+            whitespace: "pre",
+            background: "transparent"
+          }} />
+        : null
+      }
 
       <canvas 
         id="canvas"
