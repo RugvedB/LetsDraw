@@ -10,10 +10,10 @@ function createElement(id, x1, y1, x2, y2, type) {
       console.log("createElement:line")
       const roughElementForLine = generator.line(x1, y1, x2, y2)
       console.log({ id, x1, y1, x2, y2, roughElementForLine, type })
-      return { id, x1, y1, x2, y2, roughElementForLine, type }
+      return { id, x1, y1, x2, y2, roughElement: roughElementForLine, type }
     case "rectangle":
       const roughElementForRectangle = generator.rectangle(x1, y1, x2-x1, y2-y1)
-      return { id, x1, y1, x2, y2, roughElementForRectangle, type }
+      return { id, x1, y1, x2, y2, roughElement: roughElementForRectangle, type }
     case "pencil":
       return { id, type, points: [{ x: x1, y: y1 }] }
     default:
