@@ -16,6 +16,8 @@ function createElement(id, x1, y1, x2, y2, type) {
       return { id, x1, y1, x2, y2, roughElement: roughElementForRectangle, type }
     case "pencil":
       return { id, type, points: [{ x: x1, y: y1 }] }
+    case "text":
+      return { id, type, x1, y1, text:"Hey There" }
     default:
       throw new Error(`Type not recognised : ${type}`)
   
@@ -192,6 +194,11 @@ const drawElement = (roughCanvas, context, element) => {
       const myPath = new Path2D(pathData)
       context.fill(myPath)
       break
+    case "text":
+      console.log("element.text, element.x1, element.y1")
+      context.font = "24px sans-serif"
+      context.fillText(element.text, element.x1, element.y1)
+      break
     default:
       throw new Error(`Type not recognised : ${element.type}`)
 
@@ -208,7 +215,7 @@ function adjustmentRequired(type) {
 function App() {
   const [elements, setElements, undo, redo] = useHistory([])
   const [action, setAction] = useState('none')
-  const [tool, setTool] = useState('pencil')
+  const [tool, setTool] = useState('text')
   const [selectedElement, setSelectedElement] = useState(null)
 
   useLayoutEffect(() => {
@@ -269,7 +276,7 @@ function App() {
         }
       }
     }
-    else if(tool === "rectangle" || tool === "line" || tool === "pencil"){
+    else if(tool === "rectangle" || tool === "line" || tool === "pencil" || tool === "text" ){
       const id = elements.length
       const element = createElement(id, clientX, clientY, clientX, clientY, tool)
       console.log("new element created")
@@ -400,6 +407,14 @@ function App() {
           onChange={() => setTool("pencil")}
         />
         <label htmlFor="pencil">Pencil</label>
+
+        <input
+          type="radio"
+          id="text" 
+          checked={tool === "text"}
+          onChange={() => setTool("text")}
+        />
+        <label htmlFor="text">Text</label>
       </div>
 
       <div style={{ position: "fixed", top: 0, right: 0, padding: "10px" }}>
