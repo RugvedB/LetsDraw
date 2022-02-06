@@ -311,6 +311,12 @@ function App() {
       setSelectedElement(element)
 
     }
+    else if(tool === "deleteIt"){
+      const element = getElementAtPosition(clientX, clientY, elements)
+      if(element){
+        setElements(prevState => prevState.filter((ele) => element.id !== ele.id))
+      }
+    }
   }
 
   const updateElement = (id, x1, y1, x2, y2, type, options) => {
@@ -348,6 +354,10 @@ function App() {
     if(tool === "selection"){
       const element = getElementAtPosition(clientX, clientY, elements)
       event.target.style.cursor = element ? cursorForPosition(element.position) : "default"
+    }
+    else if(tool === "deleteIt"){
+      const element = getElementAtPosition(clientX, clientY, elements)
+      event.target.style.cursor = element ? "not-allowed" : "default"
     }
     
     if(action === "drawing"){
@@ -472,6 +482,14 @@ function App() {
           onChange={() => setTool("text")}
         />
         <label htmlFor="text">Text</label>
+
+        <input
+          type="radio"
+          id="deleteIt" 
+          checked={tool === "deleteIt"}
+          onChange={() => setTool("deleteIt")}
+        />
+        <label htmlFor="deleteIt">Delete</label>
       </div>
 
       <div style={{ position: "fixed", top: 0, right: 0, padding: "10px" }}>
