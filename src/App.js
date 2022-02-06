@@ -27,12 +27,12 @@ const nearPoint = (x, y, x1, y1, name) => {
   return Math.abs(x - x1) < offset && Math.abs(y - y1) < offset ? name : null
 }
 
-function onLine(x1, y1, x2, y2, x, y) {
+function onLine(x1, y1, x2, y2, x, y, distanceOffset = 1) {
   const a = { x: x1, y: y1 }
   const b = { x: x2, y: y2 }
   const c = { x: x, y: y }
   const offset = distance(a, b) - (distance(a, c) + distance(b, c))
-  const insideLine = Math.abs(offset) < 1  ? "inside" : null
+  const insideLine = Math.abs(offset) < distanceOffset  ? "inside" : null
   return insideLine
 }
 
@@ -56,13 +56,19 @@ const positionWithinElement = (x, y, element) => {
       return topLeft || topRight || bottomLeft || bottomRight || insideRect
     case "line":
       console.log("line for selection")
-      const insideLine = onLine(x1, y1, x2, y2, x, y)
+      const insideLine = onLine(x1, y1, x2, y2, x, y, 5)
       const start = nearPoint(x, y, x1, y1, "start")
       const end = nearPoint(x, y, x2, y2, "end")
       return start || end || insideLine
     case "pencil":
+      const betweenAnyPoint = element.points.some(( point, index ) => {
+        const nextPoint = element.points[index + 1]
+        if(!nextPoint) return false
+        return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) != null
+      })
+      const onPath = betweenAnyPoint ? "inside" : null
 
-      return
+      return onPath
     default:
       throw new Error("Error")
   }
@@ -239,9 +245,18 @@ function App() {
       const element = getElementAtPosition(clientX, clientY, elements)
       
       if(element) {
-        const offsetX = clientX - element.x1
-        const offsetY = clientY - element.y1
-        setSelectedElement({...element, offsetX, offsetY})
+
+        if(element.type === "pencil") {
+          const xoffsets = element.points.map(point => clientX - point.x)
+          const yoffsets = element.points.map(point => clientY - point.y)
+          setSelectedElement({...element, xoffsets, yoffsets})
+        }
+        else{
+          const offsetX = clientX - element.x1
+          const offsetY = clientY - element.y1
+          setSelectedElement({...element, offsetX, offsetY})
+        }
+
         // Added the below line because when we use selection, history is not created, only its last element is overrided. So to create a new entry in history we use setElements whichis actually the setState method of useHistory.
         setElements(prevState => prevState)
 
@@ -269,7 +284,7 @@ function App() {
   const updateElement = (id, x1, y1, x2, y2, type) => {
     const elementsCopy = [...elements]
     
-    
+
     switch(type){
       case "line":
       case "rectangle":    
@@ -301,12 +316,30 @@ function App() {
     else if(action === "moving"){
       console.log('lets move')
       console.log(selectedElement)
-      const { id, x1, y1, x2, y2, type, offsetX, offsetY } = selectedElement
-      const width = x2 - x1
-      const height = y2 - y1
-      const newX1 = clientX - offsetX
-      const newY1 = clientY - offsetY
-      updateElement(id, newX1, newY1, newX1 + width, newY1 + height, type)
+
+      if(selectedElement.type === "pencil") {
+        const newPoints = selectedElement.points.map(( _, index ) => {
+          console.log ("x:"+ selectedElement.xoffsets[index] + " new:"+ (clientX - selectedElement.xoffsets[index]))
+          return {
+            x: clientX - selectedElement.xoffsets[index],
+            y: clientY - selectedElement.yoffsets[index]
+          }
+        })
+        const elementsCopy = [...elements]
+        elementsCopy[selectedElement.id] = {
+          ...elementsCopy[selectedElement.id],
+          points : newPoints
+        }
+        setElements(elementsCopy, true)
+      }
+      else{
+        const { id, x1, y1, x2, y2, type, offsetX, offsetY } = selectedElement
+        const width = x2 - x1
+        const height = y2 - y1
+        const newX1 = clientX - offsetX
+        const newY1 = clientY - offsetY
+        updateElement(id, newX1, newY1, newX1 + width, newY1 + height, type)
+      }
     }
     else if(action === "resizing") {
       console.log("action resizing, selectedElement:")
