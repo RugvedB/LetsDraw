@@ -1,9 +1,10 @@
-<p align="center"
-<img src ="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Stack_Overflow_icon.svg/768px-Stack_Overflow_icon.svg.png" width = 200px>
+<p align="center">
+  <a href="" rel="noopener">
+ <img width=200px src="https://cdn-icons-png.flaticon.com/512/2132/2132878.png"</a>
 </p>
+<h1 align = 'center'>LetsDraw</h1>
 
-<h1 align = 'center'> LetsDraw
-</h1>
+<br>
 
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[![](https://img.shields.io/badge/Made_with-ReactJS-blue?style=for-the-badge&logo=react)](https://reactjs.org/docs/getting-started.html)&emsp;[![](https://img.shields.io/badge/IDE-Visual_Studio_Code-blue?style=for-the-badge&logo=visual-studio-code)](https://code.visualstudio.com/ "Visual Studio Code")
 
