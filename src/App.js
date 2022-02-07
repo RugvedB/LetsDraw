@@ -527,9 +527,9 @@ function App() {
       </div>
 
       <div style={{ position: "fixed", top: 0, right: 0, padding: "10px" }}>
-        <button onClick={() => undo()}>Undo (Ctrl + Z)</button>
-        <button onClick={() => redo()}>Redo (Ctrl + Y)</button>
-        <button onClick={() => clearScreen()}>Clear Screen</button>
+        <button style={{ marginRight:"5px" }} onClick={() => undo()}>Undo (Ctrl + Z)</button>
+        <button style={{ marginRight:"5px" }} onClick={() => redo()}>Redo (Ctrl + Y)</button> 
+        <button style={{ backgroundColor: "red", color:"white" }} onClick={clearScreen}>Clear Screen</button>
       </div>
 
       {
