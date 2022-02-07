@@ -5,12 +5,12 @@
 <h1 align = 'center'> LetsDraw
 </h1>
 
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[![](https://img.shields.io/badge/Made_with-ReactJS-blue?style=for-the-badge&logo=react)](https://reactjs.org/docs/getting-started.html)&emsp;[![](https://img.shields.io/badge/IDE-Visual_Studio_Code-blue?style=for-the-badge&logo=visual-studio-code)](https://code.visualstudio.com/ "Visual Studio Code")
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[![](https://img.shields.io/badge/Made_with-ReactJS-blue?style=for-the-badge&logo=react)](https://reactjs.org/docs/getting-started.html)&emsp;[![](https://img.shields.io/badge/IDE-Visual_Studio_Code-blue?style=for-the-badge&logo=visual-studio-code)](https://code.visualstudio.com/ "Visual Studio Code")
 
 
 <h2> About </h2>
 <p>
-In this project, basic functionality of simple online whiteboard tool are implemented. In my opinion, this project has by far been the best project to learn javascript.
+In this project, basic functionalities of a simple online whiteboard tool are implemented. In my opinion, this project has by far been the best project to learn javascript.
 </p>
 
 -----------------------------------
@@ -18,7 +18,7 @@ In this project, basic functionality of simple online whiteboard tool are implem
 ### Demo
 
 <p align="center">
-<img src ="./assets/demo.gif" width = 500px>
+<img src ="./assets/demo.gif" width = 90%>
 </p>
 
 
