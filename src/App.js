@@ -4,7 +4,8 @@ import { getStroke } from 'perfect-freehand'
 
 const generator = rough.generator()
 
-const elementType = {
+const elementType = { // (tool)
+  selection: "selection", 
   line: "line",
   rectangle: "rectangle",
   pencil: "pencil",
@@ -17,12 +18,13 @@ const positionType = {
   tr: "tr",
   bl: "bl",
   br: "br",
+  start: "start",
+  end: "end"
 }
 
 const actionType = {
   writing: "writing",
   drawing: "drawing",
-  selection: "selection",
   moving: "moving",
   resizing: "resizing",
   deleteIt: "deleteIt"
@@ -71,7 +73,6 @@ const positionWithinElement = (x, y, element) => {
   
   switch(type) {
     case elementType.rectangle:
-      console.log("rectangle for selection")
       const minX = Math.min(x1, x2)
       const maxX = Math.max(x1, x2)
       const minY = Math.min(y1, y2)
@@ -85,10 +86,9 @@ const positionWithinElement = (x, y, element) => {
 
       return topLeft || topRight || bottomLeft || bottomRight || insideRect
     case elementType.line:
-      console.log("line for selection")
       const insideLine = onLine(x1, y1, x2, y2, x, y, 5)
-      const start = nearPoint(x, y, x1, y1, "start")
-      const end = nearPoint(x, y, x2, y2, "end")
+      const start = nearPoint(x, y, x1, y1, positionType.start)
+      const end = nearPoint(x, y, x2, y2, positionType.end)
       return start || end || insideLine
     case elementType.pencil:
       // Pencil drawing is basically group of points. Now there is a straight line between each of these points.
@@ -141,13 +141,13 @@ function adjustElementCoordinates(element){
 
 function cursorForPosition(position){
   switch(position) {
-    case "tl":
-    case "br":
-    case "start":
-    case "end":
+    case positionType.tl:
+    case positionType.br:
+    case positionType.start:
+    case positionType.end:
       return "nwse-resize"
-    case "tr":
-    case "bl":
+    case positionType.tr:
+    case positionType.bl:
       return "nesw-resize"
     default:
       return "move"
@@ -157,15 +157,15 @@ function cursorForPosition(position){
 function resizedCoordinates(clientX, clientY, position, coordinates) {
   const { x1, y1, x2, y2 } = coordinates
   switch(position) {
-    case "tl":
-    case "start":
+    case positionType.tl:
+    case positionType.start:
       return { x1: clientX, y1: clientY, x2, y2 }
-    case "tr":
+    case positionType.tr:
       return { x1, y1: clientY, x2: clientX, y2 }
-    case "bl":
+    case positionType.bl:
       return { x1: clientX, y1, x2, y2: clientY }
-    case "br":
-    case "end":
+    case positionType.br:
+    case positionType.end:
       return { x1, y1, x2: clientX, y2: clientY }
     default:
       return null
@@ -306,12 +306,12 @@ function App() {
 
     const { clientX, clientY } = event
 
-    if(tool === "selection"){
+    if(tool === elementType.selection){
       const element = getElementAtPosition(clientX, clientY, elements)
       
       if(element) {
 
-        if(element.type === "pencil") {
+        if(element.type === elementType.pencil) {
           const xoffsets = element.points.map(point => clientX - point.x)
           const yoffsets = element.points.map(point => clientY - point.y)
           setSelectedElement({...element, xoffsets, yoffsets})
@@ -338,14 +338,12 @@ function App() {
       const id = elements.length
       // First entry will be like element at its place...like a dot
       const element = createElement(id, clientX, clientY, clientX, clientY, tool)
-      console.log("new element created")
-      console.log(element) 
       setElements(prevState => [...prevState, element])
       setAction(tool === elementType.text ? actionType.writing : actionType.drawing)
       setSelectedElement(element)
 
     }
-    else if(tool === "deleteIt"){
+    else if(tool === actionType.deleteIt){
       const element = getElementAtPosition(clientX, clientY, elements)
       if(element){
         setElements(prevState => prevState.filter((ele) => element.id !== ele.id))
@@ -385,7 +383,7 @@ function App() {
   const handleMouseMove = (event) => {
     const { clientX, clientY } = event
 
-    if(tool === actionType.selection){
+    if(tool === elementType.selection){
       const element = getElementAtPosition(clientX, clientY, elements)
       event.target.style.cursor = element ? cursorForPosition(element.position) : "default"
     }

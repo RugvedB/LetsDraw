@@ -1,70 +1,70 @@
-# Getting Started with Create React App
+<p align="center"
+<img src ="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Stack_Overflow_icon.svg/768px-Stack_Overflow_icon.svg.png" width = 200px>
+</p>
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<h1 align = 'center'> LetsDraw
+</h1>
 
-## Available Scripts
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[![](https://img.shields.io/badge/Made_with-ReactJS-blue?style=for-the-badge&logo=react)](https://reactjs.org/docs/getting-started.html)&emsp;[![](https://img.shields.io/badge/IDE-Visual_Studio_Code-blue?style=for-the-badge&logo=visual-studio-code)](https://code.visualstudio.com/ "Visual Studio Code")
 
-In the project directory, you can run:
 
-### `npm start`
+<h2> About </h2>
+<p>
+In this project, basic functionality of simple online whiteboard tool are implemented. In my opinion, this project has by far been the best project to learn javascript.
+</p>
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+-----------------------------------
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Demo
 
-### `npm test`
+<p align="center">
+<img src ="./assets/demo.gif" width = 500px>
+</p>
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+-----------------------------------
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 🚀 Features
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+<p align="left">
+   <ul>
+      <li>Draw, drag, resize Rectangle</li>
+      <li>Draw, drag, resize Line</li>
+      <li>Draw, drag Free hand pencil drawing</li>
+      <li>Maintain drawing history with undo-redo feature</li>
+   </ul>
+</p>
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+-----------------------------------
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### :guide_dog: Installation Guide
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+A step by step series of examples that tell you how to get a development env running
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+In your cmd:
 
-## Learn More
+```
+git clone https://github.com/RugvedB/LetsDraw/
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Then,
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+cd LetsDraw
+npm install
+npm start
+```
 
-### Code Splitting
+You are done with the setup now!
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-### Analyzing the Bundle Size
+### :page_with_curl: Acknowledgements & References
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- Redhwan Nacef - https://www.youtube.com/c/RedhwanNacef
+- Javascript - https://developer.mozilla.org/en-US/docs/Web/JavaScript
 
-### Making a Progressive Web App
+-----------------------------------
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+<h3 align="center"><b>Developed with :heart: <a href="https://github.com/RugvedB">Rugved</a> </b></h1>
